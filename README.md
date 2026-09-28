@@ -34,10 +34,15 @@ to `https://svici042.github.io/Kino-app/` on pushes to `main`. In the repository
 Settings → Pages, select **GitHub Actions** as the source.
 
 GitHub Pages hosts only the frontend. Movie lists, search, and details still
-require a separately hosted Node.js API; the current `/api/tmdb` endpoint works
-only when the frontend and server share an origin. Those features will not work
-on Pages until an external API and its allowed origin are configured.
+require a separately hosted Node.js API. Set `FRONTEND_ORIGIN` on that server to
+`https://svici042.github.io`. Set the GitHub Actions repository variable
+`VITE_API_BASE_URL` to its public HTTPS endpoint, such as
+`https://your-api.example/api/tmdb`, then rerun the Pages workflow.
+The default `/api/tmdb` endpoint remains available for local development.
 Never put `TMDB_READ_TOKEN` in frontend code or a `VITE_` environment variable.
+Store it only in the API host's secret environment settings. CORS restricts
+browser origins; it does not authenticate callers. Server request limits still
+apply to allowed origins.
 
 ## Node.js hosting
 

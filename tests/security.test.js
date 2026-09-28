@@ -36,6 +36,57 @@ function request(
 }
 const success = () => Response.json({ results: [] });
 
+test("Pages origin is allowed exactly and the token stays in upstream headers", async () => {
+  const allowedOrigin = "https://svici042.github.io";
+  const token = "private-test-credential";
+  let calls = 0;
+  const middleware = tmdbMiddleware(token, {
+    allowedOrigin,
+    fetchImpl: async (url, options) => {
+      calls++;
+      assert.equal(url.origin, "https://api.themoviedb.org");
+      assert.ok(!url.href.includes(token));
+      assert.equal(options.headers.Authorization, `Bearer ${token}`);
+      assert.equal(options.redirect, "error");
+      return success();
+    },
+  });
+  for (const origin of ["https://evil.example", `${allowedOrigin}.evil.example`, "null"]) {
+    const response = await request(middleware, "/movie/popular", "local", {
+      origin,
+      "sec-fetch-site": "cross-site",
+    });
+    assert.equal(response.statusCode, 403);
+    assert.equal(response.headers["Access-Control-Allow-Origin"], undefined);
+  }
+  assert.equal(calls, 0);
+  const response = await request(middleware, "/movie/popular", "local", {
+    origin: allowedOrigin,
+    "sec-fetch-site": "cross-site",
+  });
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.headers["Access-Control-Allow-Origin"], allowedOrigin);
+  assert.equal(response.headers.Vary, "Origin");
+  assert.ok(!JSON.stringify(response).includes(token));
+  assert.equal(calls, 1);
+});
+
+test("upstream errors never expose credentials to the Pages client", async () => {
+  const token = "private-test-credential";
+  const middleware = tmdbMiddleware(token, {
+    allowedOrigin: "https://svici042.github.io",
+    fetchImpl: async () => {
+      throw new Error(token);
+    },
+  });
+  const response = await request(middleware, "/movie/popular", "local", {
+    origin: "https://svici042.github.io",
+    "sec-fetch-site": "cross-site",
+  });
+  assert.equal(response.statusCode, 502);
+  assert.ok(!JSON.stringify(response).includes(token));
+});
+
 test("cache reuse, expiry and IP rate limit cannot be bypassed by forwarded headers", async () => {
   let time = 0;
   let calls = 0;

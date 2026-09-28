@@ -12,7 +12,12 @@ const allowedPaths = new Set([
 // Only explicitly configured proxy peers may provide client addresses.
 export function tmdbMiddleware(
   token,
-  { fetchImpl = fetch, now = Date.now, trustedProxyIPs = "" } = {},
+  {
+    fetchImpl = fetch,
+    now = Date.now,
+    trustedProxyIPs = "",
+    allowedOrigin = "",
+  } = {},
 ) {
   const clientAddress = createClientAddress(trustedProxyIPs);
   // Per-process request budgets, cached responses, and in-flight tasks.
@@ -42,7 +47,17 @@ export function tmdbMiddleware(
       res.setHeader("Allow", "GET");
       return send(405, "Method not allowed");
     }
-    if (req.headers["sec-fetch-site"] === "cross-site") {
+    // CORS permits the configured frontend, but is not client authentication.
+    const origin = req.headers.origin;
+    const allowedCrossOrigin = Boolean(allowedOrigin && origin === allowedOrigin);
+    if (allowedOrigin && origin && !allowedCrossOrigin) {
+      return send(403, "Origin denied");
+    }
+    if (allowedCrossOrigin) {
+      res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+      res.setHeader("Vary", "Origin");
+    }
+    if (req.headers["sec-fetch-site"] === "cross-site" && !allowedCrossOrigin) {
       return send(403, "Cross-site request denied");
     }
     const path = url.pathname.slice("/api/tmdb".length);

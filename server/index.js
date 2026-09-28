@@ -25,6 +25,7 @@ const serveStatic = await createStaticHandler(
 );
 const api = tmdbMiddleware(token, {
   trustedProxyIPs: process.env.TRUSTED_PROXY_IPS || "",
+  allowedOrigin: process.env.FRONTEND_ORIGIN || "",
 });
 const server = createServer(tls, async (req, res) => {
   for (const [name, value] of Object.entries(securityHeaders())) {
