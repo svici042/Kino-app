@@ -30,7 +30,7 @@ Movie translations depend on availability in TMDB.
 ## GitHub Pages
 
 The GitHub Actions workflow builds the frontend with Vite and publishes `dist`
-to `https://svici042.github.io/API/` on pushes to `main`. In the repository's
+to `https://svici042.github.io/Kino-app/` on pushes to `main`. In the repository's
 Settings → Pages, select **GitHub Actions** as the source.
 
 GitHub Pages hosts only the frontend. Movie lists, search, and details still

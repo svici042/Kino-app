@@ -9,8 +9,8 @@ export default defineConfig(({ mode }) => {
   const middleware = tmdbMiddleware(env.TMDB_READ_TOKEN);
 
   return {
-    // GitHub Pages serves this repository below /API/.
-    base: process.env.GITHUB_PAGES === "true" ? "/API/" : "/",
+    // Use the site's configured path, including repository renames or custom domains.
+    base: process.env.PAGES_BASE_PATH || "/",
     server: { headers: securityHeaders({ development: true }) },
     preview: { headers: securityHeaders() },
     // JSX support followed by the credential-protecting API middleware.

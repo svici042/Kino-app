@@ -26,13 +26,14 @@ jobs:
           node-version: 22
           cache: npm
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
       - name: Install dependencies
         run: npm ci
       - name: Build
         run: npm run build
         env:
-          GITHUB_PAGES: "true"
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
