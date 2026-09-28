@@ -27,7 +27,19 @@ Keep `.env.local` private. Restart the server after changing your token.
 Your watchlist and language preference are saved in your browser.
 Movie translations depend on availability in TMDB.
 
-The app requires a Node.js server and cannot run on GitHub Pages alone.
+## GitHub Pages
+
+The GitHub Actions workflow builds the frontend with Vite and publishes `dist`
+to `https://svici042.github.io/API/` on pushes to `main`. In the repository's
+Settings → Pages, select **GitHub Actions** as the source.
+
+GitHub Pages hosts only the frontend. Movie lists, search, and details still
+require a separately hosted Node.js API; the current `/api/tmdb` endpoint works
+only when the frontend and server share an origin. Those features will not work
+on Pages until an external API and its allowed origin are configured.
+Never put `TMDB_READ_TOKEN` in frontend code or a `VITE_` environment variable.
+
+## Node.js hosting
 
 For `npm start`, set `TLS_CERT_FILE` and `TLS_KEY_FILE` in `.env.local` to the
 paths of a valid certificate and its private key. Open the hostname covered by
